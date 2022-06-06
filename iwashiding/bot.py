@@ -1,4 +1,5 @@
 import os as _os
+import re as _re
 from dotenv import load_dotenv as _load_dotenv
 import discord as _discord
 from discord.ext import commands as _commands
@@ -10,6 +11,28 @@ emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/stati
 bot = _commands.Bot(command_prefix=COMMAND_PREFIX)
 _load_dotenv()
 DISCORD_TOKEN = _os.environ['DISCORD_TOKEN']
+
+@bot.event
+async def on_message(message):
+    
+    if message.author == bot.user:
+        return
+    
+    potential_emotes = _re.findall(r"(:(?:\w|[0-9])+:)", message.content)
+    if len(potential_emotes) == 0:
+        # no emotes to process
+        return
+    
+    for potential_emote in potential_emotes:
+        
+        potential_emote = potential_emote[1:-1]
+        ctx = await bot.get_context(message)
+        
+        if potential_emote in emotes:
+            await emote(ctx, potential_emote)
+            continue
+        
+        await ctx.send('Emote not found!')
 
 @bot.command()
 async def demo(ctx):
