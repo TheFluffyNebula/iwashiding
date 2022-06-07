@@ -4,6 +4,7 @@ import requests as _requests
 import bs4 as _bs4
 from dotenv import load_dotenv as _load_dotenv
 from discord.ext import commands as _commands
+import discord as _discord
 
 COMMAND_PREFIX = ";"
 emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/static/light/1.0",
@@ -32,7 +33,9 @@ async def on_message(message):
     if message.content.startswith(COMMAND_PREFIX + 'emote '):
         await emote(await bot.get_context(message), message.content[message.content.index(' ') + 1:])
         return
-    
+    if message.content.startswith(COMMAND_PREFIX + 'catjam'):
+        await catjam(await bot.get_context(message))
+        return
     potential_emotes = _re.findall(r"(:(?:\w|[0-9])+:)", message.content)
     if len(potential_emotes) == 0:
         # no emotes to process
@@ -48,6 +51,11 @@ async def on_message(message):
 async def demo(ctx):
     await ctx.send('You should see the PogChamp lizard.')
     await ctx.send(emotes["PogChamp"])
+    
+
+@bot.command()
+async def catjam(ctx):
+    await ctx.send(embed = _discord.Embed().set_image(url="https://cdn.betterttv.net/emote/61fe27dd06fd6a9f5be371a2/1x.gif"))    
 
 @bot.command()
 async def emote(ctx, emote):
