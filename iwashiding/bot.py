@@ -63,6 +63,7 @@ async def emote(ctx, emote):
     
     if emote not in emotes:
         await ctx.send('Emote unavailable.')
+        return
         # r = _requests.get(f'https://www.frankerfacez.com/emoticons/?q={emote}&sort=count-desc&days=0')
         # tr = _bs4.BeautifulSoup(r.content, 'html.parser').find('tbody').find('tr')
         # if tr.get_text() == 'No Emotes Found':
