@@ -16,6 +16,7 @@ emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/stati
           ":P":"https://static-cdn.jtvnw.net/emoticons/v2/12/static/light/1.0",
           ":|":"https://static-cdn.jtvnw.net/emoticons/v2/555555563/static/light/1.0",
           "<3":"https://static-cdn.jtvnw.net/emoticons/v2/555555584/static/light/1.0"}
+emotes.update(_requests.get('https://raw.githubusercontent.com/nouturnsign/iwashiding/master/top_emotes.json').json()['emotes'])
 bot = _commands.Bot(command_prefix=COMMAND_PREFIX)
 
 _load_dotenv()
@@ -61,18 +62,19 @@ async def catjam(ctx):
 async def emote(ctx, emote):
     
     if emote not in emotes:
-        r = _requests.get(f'https://www.frankerfacez.com/emoticons/?q={emote}&sort=count-desc&days=0')
-        tr = _bs4.BeautifulSoup(r.content, 'html.parser').find('tbody').find('tr')
-        if tr.get_text() == 'No Emotes Found':
-            await ctx.send('No Emotes Found')
-            return
-        name = tr.find('td', {'class': 'emote-name'}).a.get_text()
-        src = tr.find('td', {'class': 'emoticon dark'}).img['src']
-        emotes[name] = src
+        await ctx.send('Emote unavailable.')
+        # r = _requests.get(f'https://www.frankerfacez.com/emoticons/?q={emote}&sort=count-desc&days=0')
+        # tr = _bs4.BeautifulSoup(r.content, 'html.parser').find('tbody').find('tr')
+        # if tr.get_text() == 'No Emotes Found':
+        #     await ctx.send('No Emotes Found')
+        #     return
+        # name = tr.find('td', {'class': 'emote-name'}).a.get_text()
+        # src = tr.find('td', {'class': 'emoticon dark'}).img['src']
+        # emotes[name] = src
     
-        if emote != name:
-            await ctx.send(f'{emote} seems to match {name}. Did you mean {name}?') 
-            return
+        # if emote != name:
+        #     await ctx.send(f'{emote} seems to match {name}. Did you mean {name}?') 
+        #     return
     
     await ctx.send(emotes[emote])
 
