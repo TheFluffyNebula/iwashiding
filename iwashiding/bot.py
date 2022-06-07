@@ -32,13 +32,13 @@ DISCORD_TOKEN = _os.environ['DISCORD_TOKEN']
 
 @bot.event
 async def on_connect():
-    global emoji_cache
-    emoji_cache = {emoji.name[len(BOT_NAME + SEP):]: emoji for emoji in bot.emojis if emoji.name.startswith(BOT_NAME)}
     print(BOT_NAME + " connected")
-    print("Available emojis:", list(emoji_cache.keys()))
 
 @bot.event
 async def on_ready():
+    global emoji_cache
+    emoji_cache = {emoji.name[len(BOT_NAME + SEP):]: emoji for emoji in bot.emojis if emoji.name.startswith(BOT_NAME)}
+    print("Available emojis:", list(emoji_cache.keys()))
     print(BOT_NAME + " ready")
 
 @bot.event
