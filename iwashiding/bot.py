@@ -1,11 +1,12 @@
 import os as _os
 import re as _re
+import requests as _requests
+import bs4 as _bs4
 from dotenv import load_dotenv as _load_dotenv
-import discord as _discord
 from discord.ext import commands as _commands
 
 COMMAND_PREFIX = ";"
-emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/static/light/3.0",
+emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/static/light/1.0",
           ":)":"https://static-cdn.jtvnw.net/emoticons/v2/1/static/light/1.0",
           ":(":"https://static-cdn.jtvnw.net/emoticons/v2/555555558/static/light/1.0",
           ":O":"https://static-cdn.jtvnw.net/emoticons/v2/555555580/static/light/1.0"}
@@ -36,12 +37,7 @@ async def on_message(message):
         
         potential_emote = potential_emote[1:-1]
         ctx = await bot.get_context(message)
-        
-        if potential_emote in emotes:
-            await emote(ctx, potential_emote)
-            continue
-        
-        await ctx.send('Emote not found!')
+        await emote(ctx, potential_emote)
 
 @bot.command()
 async def demo(ctx):
@@ -50,6 +46,21 @@ async def demo(ctx):
 
 @bot.command()
 async def emote(ctx, emote):
+    
+    if emote not in emotes:
+        r = _requests.get(f'https://www.frankerfacez.com/emoticons/?q={emote}&sort=count-desc&days=0')
+        tr = _bs4.BeautifulSoup(r.content, 'html.parser').find('tbody').find('tr')
+        if tr.get_text() == 'No Emotes Found':
+            await ctx.send('No Emotes Found')
+            return
+        name = tr.find('td', {'class': 'emote-name'}).a.get_text()
+        src = tr.find('td', {'class': 'emoticon dark'}).img['src']
+        emotes[name] = src
+    
+        if emote != name:
+            await ctx.send(f'{emote} seems to match {name}. Did you mean {name}?') 
+            return
+    
     await ctx.send(emotes[emote])
 
 bot.run(DISCORD_TOKEN)
