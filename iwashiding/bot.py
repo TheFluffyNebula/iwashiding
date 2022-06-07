@@ -27,16 +27,11 @@ async def on_message(message):
     
     if message.author == bot.user:
         return
+
+    if message.content.startswith(COMMAND_PREFIX):
+        await bot.process_commands(message)
+        return
     
-    if message.content.startswith(COMMAND_PREFIX + 'demo'):
-        await demo(await bot.get_context(message))
-        return
-    if message.content.startswith(COMMAND_PREFIX + 'emote '):
-        await emote(await bot.get_context(message), message.content[message.content.index(' ') + 1:])
-        return
-    if message.content.startswith(COMMAND_PREFIX + 'catjam'):
-        await catjam(await bot.get_context(message))
-        return
     potential_emotes = _re.findall(r"(:(?:\w|[0-9])+:)", message.content)
     if len(potential_emotes) == 0:
         # no emotes to process
