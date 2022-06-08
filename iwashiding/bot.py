@@ -32,10 +32,9 @@ _load_dotenv()
 DISCORD_TOKEN = _os.environ['DISCORD_TOKEN']
 
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(ctx: _commands.Context, error: _commands.errors) -> _commands.errors:
     if isinstance(error, _commands.errors.CommandNotFound):
-        await ctx.send(f'Command not found. Try using {COMMAND_PREFIX}help.')
-        return error
+        await ctx.send(f'Command not found. Try using `{COMMAND_PREFIX}help`')
     raise error
 
 @bot.event
@@ -51,7 +50,7 @@ async def on_ready():
     print(BOT_NAME + " ready")
 
 @bot.event
-async def on_message(message):
+async def on_message(message: _discord.Message):
     
     author = message.author
     if not isinstance(author, _discord.member.Member):
@@ -65,18 +64,18 @@ async def on_message(message):
     await _replace_with_emotes(message)
 
 @bot.command()
-async def demo(ctx):
+async def demo(ctx: _commands.Context):
     """Demo of sending emotes."""
     await ctx.send('You should see the PogChamp lizard.')
     await ctx.send(emotes["PogChamp"])
 
 @bot.command()
-async def catjam(ctx):
+async def catjam(ctx: _commands.Context):
     """Sending catJAM as an embeded gif."""
     await ctx.send(embed = _discord.Embed().set_image(url="https://cdn.betterttv.net/emote/61fe27dd06fd6a9f5be371a2/1x.gif"))    
 
 @bot.command()
-async def emote(ctx, emote):
+async def emote(ctx: _commands.Context, emote: str):
     """Have the bot send an existing emote as an image/*."""
     
     if emote not in emotes:
@@ -97,7 +96,7 @@ async def emote(ctx, emote):
     
     await ctx.send(emotes[emote])
     
-async def _replace_with_emotes(message):
+async def _replace_with_emotes(message: _discord.Message):
     global emoji_cache, popularity_cache
 
     potential_emotes = [potential_emote 
@@ -135,7 +134,7 @@ async def _replace_with_emotes(message):
     print('Deleted original message and hook')
     
 @bot.command(aliases=['overwrite'])
-async def add(ctx, name, url, verbose=True):
+async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
     """Add or overwrite existing emote, using a name and url."""
     global emoji_cache, popularity_cache
     
@@ -168,8 +167,8 @@ async def add(ctx, name, url, verbose=True):
     print('Created emoji:', temp_emoji)
 
 @bot.command() 
-async def remove(ctx, emote):
-    """Remove an existing emote, using a name and url."""
+async def remove(ctx: _commands.Context, emote: str):
+    """Remove an existing emote, using a name."""
     global emoji_cache, popularity_cache
     
     if emote not in emoji_cache:
@@ -181,7 +180,7 @@ async def remove(ctx, emote):
     await ctx.send(f"Emote {emote} has been removed.")
 
 @bot.command(aliases=['removeall']) 
-async def clear(ctx):
+async def clear(ctx: _commands.Context):
     """Remove all generated emojis."""
     global emoji_cache, popularity_cache
     
