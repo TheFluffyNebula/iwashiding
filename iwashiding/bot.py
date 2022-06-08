@@ -1,5 +1,6 @@
 import os as _os
 import re as _re
+import asyncio as _asyncio
 import requests as _requests
 from dotenv import load_dotenv as _load_dotenv
 from discord.ext import commands as _commands
@@ -96,12 +97,14 @@ async def _replace_with_emotes(message: _discord.Message):
     ctx = await bot.get_context(message)
     print('Original message', edited_message)
     
+    fetchable = {potential_emote[1:-1] for potential_emote in potential_emotes if potential_emote[1:-1] not in emoji_cache}
+    await _asyncio.gather(*((add(ctx, name, emotes[name], verbose=False)) for name in fetchable))
+    print('Downloaded all new emojis:', fetchable)
+    
     for potential_emote in potential_emotes:
         name = potential_emote[1:-1]
-        if name not in emoji_cache:
-            await add(ctx, name, emotes[name], verbose=False)
         emoji = emoji_cache[name]
-        edited_message = edited_message.replace(potential_emote, str(emoji))
+        edited_message = _re.sub(":" + name + ":", str(emoji), edited_message)
     print('Edited message:', edited_message)
 
     author = message.author
@@ -135,7 +138,7 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
     if name in emoji_cache:
         await emoji_cache[name].delete()
         if verbose: await ctx.send(f'Deleted existing emoji {name}.')
-        print('Deleted existing emoji:', least_popular_emoji.name)
+        print('Deleted existing emoji:', name)
     if image_request.status_code != 200 or not image_request.headers.get('Content-Type', None).startswith('image'):
         if verbose: await ctx.send('Invalid url:', url)
         print('Bad response:', image_request.status_code, 'from:', url)
