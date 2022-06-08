@@ -160,6 +160,7 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
             temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
         except Exception as e:
             print(f'Tried creating emoji {name}, but failed for unknown reason: {e}')
+            return
         
     emoji_cache[name] = temp_emoji
     popularity_cache[name] = popularity_cache.get(name, 0) + 1
