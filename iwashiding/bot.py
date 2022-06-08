@@ -97,7 +97,6 @@ async def _replace_with_emotes(message: _discord.Message):
         if name not in emoji_cache:
             await add(ctx, name, emotes[name], verbose=False)
         emoji = emoji_cache[name]
-        popularity_cache[name] = popularity_cache.get(name, 0) + 1
         edited_message = edited_message.replace(potential_emote, str(emoji))
     print('Edited message:', edited_message)
 
@@ -156,6 +155,7 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
             print(f'Tried creating emoji {name}, but failed for unknown reason: {e}')
         
     emoji_cache[name] = temp_emoji
+    popularity_cache[name] = popularity_cache.get(name, 0) + 1
     if verbose: await ctx.send(f'Created emote {temp_emoji}')
     print('Created emoji:', temp_emoji)
 
