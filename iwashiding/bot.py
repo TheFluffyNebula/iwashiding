@@ -103,7 +103,7 @@ async def _replace_with_emotes(message: _discord.Message):
     
     for potential_emote in potential_emotes:
         name = potential_emote[1:-1]
-        emoji = emoji_cache[name]
+        emoji = emoji_cache.get(name, potential_emote)
         edited_message = _re.sub(":" + name + ":", str(emoji), edited_message)
     print('Edited message:', edited_message)
 
@@ -147,7 +147,11 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
     is_gif = image_request.headers['Content-Type'].endswith('gif')
     try:
         temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
-    except _discord.errors.HTTPException:
+    except _discord.errors.HTTPException as e:
+        if e.code == FAILED_TO_RESIZE_ASSET:
+            await ctx.send(f'Url {url} points to an image that has too many bytes. Consider using a lower quality image.')
+            print(f'Failed to download {name} due to asset size limit.')
+            return
         least_popular_emoji = emoji_cache[min(popularity_cache.keys(), 
                                               key=lambda name: 
                                                   # flip the .startswith condition (is not is_gif)

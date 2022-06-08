@@ -12,3 +12,4 @@ emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/stati
           ":|":"https://static-cdn.jtvnw.net/emoticons/v2/555555563/static/light/1.0",
           "<3":"https://static-cdn.jtvnw.net/emoticons/v2/555555584/static/light/1.0"}
 TOP_EMOTES_URL = 'https://raw.githubusercontent.com/nouturnsign/iwashiding/master/top_emotes.json'
+FAILED_TO_RESIZE_ASSET = 50138
