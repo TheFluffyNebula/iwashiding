@@ -1,6 +1,6 @@
-BOT_NAME = "IWasHiding"
-SEP = "_"
-BOT_DESCRIPTION = "Use popular twitch.tv emotes in discord!"
+BOT_NAME = "IWasHiding" # constant, SHOULD NOT CHANGE with nickname
+SEP = "_" # for emoji names
+BOT_DESCRIPTION = "Use popular twitch.tv emotes in discord!" # top of help message
 COMMAND_PREFIX = ";"
 emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/static/light/1.0",
           ":)":"https://static-cdn.jtvnw.net/emoticons/v2/1/static/light/1.0",

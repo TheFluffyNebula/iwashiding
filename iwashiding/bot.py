@@ -54,12 +54,14 @@ async def on_message(message: _discord.Message):
 @bot.command()
 async def demo(ctx: _commands.Context):
     """Demo of sending emotes."""
+    
     await ctx.send('You should see the PogChamp lizard.')
     await ctx.send(emotes["PogChamp"])
 
 @bot.command()
 async def catjam(ctx: _commands.Context):
     """Sending catJAM as an embeded gif."""
+    
     await ctx.send(embed = _discord.Embed().set_image(url="https://cdn.betterttv.net/emote/61fe27dd06fd6a9f5be371a2/1x.gif"))    
 
 @bot.command()
@@ -69,18 +71,6 @@ async def emote(ctx: _commands.Context, emote: str):
     if emote not in emotes:
         await ctx.send('Emote unavailable.')
         return
-        # r = _requests.get(f'https://www.frankerfacez.com/emoticons/?q={emote}&sort=count-desc&days=0')
-        # tr = _bs4.BeautifulSoup(r.content, 'html.parser').find('tbody').find('tr')
-        # if tr.get_text() == 'No Emotes Found':
-        #     await ctx.send('No Emotes Found')
-        #     return
-        # name = tr.find('td', {'class': 'emote-name'}).a.get_text()
-        # src = tr.find('td', {'class': 'emoticon dark'}).img['src']
-        # emotes[name] = src
-    
-        # if emote != name:
-        #     await ctx.send(f'{emote} seems to match {name}. Did you mean {name}?') 
-        #     return
     
     await ctx.send(emotes[emote])
     
@@ -93,12 +83,12 @@ async def _replace_with_emotes(message: _discord.Message):
     if len(potential_emotes) == 0:
         # no emotes to process
         return
-
     print('Found emotes:', potential_emotes)
+    
     edited_message = message.content
     ctx = await bot.get_context(message)
-    
     print('Original message', edited_message)
+    
     for potential_emote in potential_emotes:
         name = potential_emote[1:-1]
         if name not in emoji_cache:
@@ -111,12 +101,14 @@ async def _replace_with_emotes(message: _discord.Message):
     author = message.author
     hook = await message.channel.create_webhook(name=BOT_NAME + SEP + "hook")
     print('Created hook:', hook)
+    
     await hook.send(
         edited_message,
         username=author.display_name + " // " + BOT_NAME,
         avatar_url=author.avatar_url
     )
     print('Sent message as hook')
+    
     await message.delete()
     await hook.delete()
     print('Deleted original message and hook')
@@ -127,7 +119,13 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
     global emoji_cache, popularity_cache
     
     guild = ctx.guild
-    image_request = _requests.get(url)
+    
+    try:
+        image_request = _requests.get(url)
+    except Exception:
+        print('Bad request from:', url)
+        return
+        
     if name in emoji_cache:
         await emoji_cache[name].delete()
         if verbose: await ctx.send(f'Deleted existing emoji {name}.')
@@ -150,6 +148,7 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
         await least_popular_emoji.delete()
         print('Deleted emoji:', least_popular_emoji.name)
         temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
+        
     emoji_cache[name] = temp_emoji
     if verbose: await ctx.send(f'Created emote {temp_emoji}')
     print('Created emoji:', temp_emoji)
