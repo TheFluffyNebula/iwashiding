@@ -26,9 +26,17 @@ bot = _commands.Bot(
     help_command=_commands.DefaultHelpCommand(no_category = 'Commands')
 )
 emoji_cache = {}
+popularity_cache = {}
 
 _load_dotenv()
 DISCORD_TOKEN = _os.environ['DISCORD_TOKEN']
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, _commands.errors.CommandNotFound):
+        await ctx.send(f'Command not found. Try using {COMMAND_PREFIX}help.')
+        return error
+    raise error
 
 @bot.event
 async def on_connect():
@@ -36,8 +44,9 @@ async def on_connect():
 
 @bot.event
 async def on_ready():
-    global emoji_cache
-    emoji_cache = {emoji.name[len(BOT_NAME + SEP):]: emoji for emoji in bot.emojis if emoji.name.startswith(BOT_NAME)}
+    global emoji_cache, popularity_cache
+    emoji_cache = {emoji.name[len(BOT_NAME + SEP):]:emoji for emoji in bot.emojis if emoji.name.startswith(BOT_NAME)}
+    popularity_cache = {name:0 for name in emoji_cache}
     print("Available emojis:", list(emoji_cache.keys()))
     print(BOT_NAME + " ready")
 
@@ -50,13 +59,8 @@ async def on_message(message):
         return
 
     if message.content.startswith(COMMAND_PREFIX):
-        try:
-            await bot.process_commands(message)
-        except _commands.errors.CommandNotFound:
-            ctx = await bot.get_context(message)
-            await ctx.send(f'Command not found. Use {COMMAND_PREFIX}help for help.')
-        finally:
-            return
+        await bot.process_commands(message)
+        return
     
     await _replace_with_emotes(message)
 
@@ -73,7 +77,7 @@ async def catjam(ctx):
 
 @bot.command()
 async def emote(ctx, emote):
-    """Have the bot send the emote as an image/*."""
+    """Have the bot send an existing emote as an image/*."""
     
     if emote not in emotes:
         await ctx.send('Emote unavailable.')
@@ -94,10 +98,11 @@ async def emote(ctx, emote):
     await ctx.send(emotes[emote])
     
 async def _replace_with_emotes(message):
+    global emoji_cache, popularity_cache
 
-    author = message.author
-        
-    potential_emotes = _re.findall(r"(:(?:\w|[0-9])+:)", message.content)
+    potential_emotes = [potential_emote 
+                        for potential_emote in _re.findall(r"(:(?:\w|[0-9])+:)", message.content) 
+                        if not potential_emote.startswith(':' + BOT_NAME + SEP)]
     if len(potential_emotes) == 0:
         # no emotes to process
         return
@@ -105,21 +110,18 @@ async def _replace_with_emotes(message):
     print('Found emotes:', potential_emotes)
     edited_message = message.content
     ctx = await bot.get_context(message)
-    guild = ctx.guild
     
     print('Original message', edited_message)
     for potential_emote in potential_emotes:
         name = potential_emote[1:-1]
         if name not in emoji_cache:
-            image_request = _requests.get(emotes[name])
-            if image_request.status_code == 200:
-                temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
-                emoji_cache[name] = temp_emoji
-                print('Created emoji:', temp_emoji)
+            await add(ctx, name, emotes[name], verbose=False)
         emoji = emoji_cache[name]
+        popularity_cache[name] = popularity_cache.get(name, 0) + 1
         edited_message = edited_message.replace(potential_emote, str(emoji))
-    print('Edited message', edited_message)
+    print('Edited message:', edited_message)
 
+    author = message.author
     hook = await message.channel.create_webhook(name=BOT_NAME + SEP + "hook")
     print('Created hook:', hook)
     await hook.send(
@@ -132,8 +134,62 @@ async def _replace_with_emotes(message):
     await hook.delete()
     print('Deleted original message and hook')
     
-async def _clear_emoji_cache():
-    for _, emoji in emoji_cache:
+@bot.command(aliases=['overwrite'])
+async def add(ctx, name, url, verbose=True):
+    """Add or overwrite existing emote, using a name and url."""
+    global emoji_cache, popularity_cache
+    
+    guild = ctx.guild
+    image_request = _requests.get(url)
+    if name in emoji_cache:
+        await emoji_cache[name].delete()
+        if verbose: await ctx.send(f'Deleted existing emoji {name}.')
+        print('Deleted existing emoji:', least_popular_emoji.name)
+    if image_request.status_code != 200 or not image_request.headers.get('Content-Type', None).startswith('image'):
+        if verbose: await ctx.send('Invalid url:', url)
+        print('Bad response:', image_request.status_code, 'from:', url)
+        return
+    
+    is_gif = image_request.headers['Content-Type'].endswith('gif')
+    try:
+        temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
+    except _discord.errors.HTTPException:
+        least_popular_emoji = emoji_cache[min(popularity_cache.keys(), 
+                                              key=lambda name: 
+                                                  # flip the .startswith condition (is not is_gif)
+                                                  # so that gifs are sorted first when we are looking at a gif
+                                                  (str(emoji_cache[name]).startswith('<a') is not is_gif, 
+                                                   popularity_cache[name]))]
+        await least_popular_emoji.delete()
+        print('Deleted emoji:', least_popular_emoji.name)
+        temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
+    emoji_cache[name] = temp_emoji
+    if verbose: await ctx.send(f'Created emote {temp_emoji}')
+    print('Created emoji:', temp_emoji)
+
+@bot.command() 
+async def remove(ctx, emote):
+    """Remove an existing emote, using a name and url."""
+    global emoji_cache, popularity_cache
+    
+    if emote not in emoji_cache:
+        await ctx.send(f"Emote {emote} has not been added yet.")
+        return
+    emoji = emoji_cache.pop(emote)
+    popularity_cache.pop(emote)
+    await emoji.delete()
+    await ctx.send(f"Emote {emote} has been removed.")
+
+@bot.command(aliases=['removeall']) 
+async def clear(ctx):
+    """Remove all generated emojis."""
+    global emoji_cache, popularity_cache
+    
+    for emoji in emoji_cache.values():
         await emoji.delete()
+        print("Deleted:", emoji.name)
+    emoji_cache = {}
+    popularity_cache = {}
+    await ctx.send(f"Cleared all emotes from {BOT_NAME}.")
 
 bot.run(DISCORD_TOKEN)
