@@ -21,17 +21,20 @@ DISCORD_TOKEN = _os.environ['DISCORD_TOKEN']
 
 @bot.event
 async def on_command_error(ctx: _commands.Context, error: _commands.errors) -> _commands.errors:
+
     if isinstance(error, _commands.errors.CommandNotFound):
         await ctx.send(f'Command not found. Try using `{COMMAND_PREFIX}help`')
     raise error
 
 @bot.event
 async def on_connect():
+    
     print(BOT_NAME + " connected")
 
 @bot.event
 async def on_ready():
     global emoji_cache, popularity_cache
+    
     emoji_cache = {emoji.name[len(BOT_NAME + SEP):]:emoji for emoji in bot.emojis if emoji.name.startswith(BOT_NAME)}
     popularity_cache = {name:0 for name in emoji_cache}
     print("Available emojis:", list(emoji_cache.keys()))
@@ -147,7 +150,10 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
                                                    popularity_cache[name]))]
         await least_popular_emoji.delete()
         print('Deleted emoji:', least_popular_emoji.name)
-        temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
+        try:
+            temp_emoji = await guild.create_custom_emoji(name=BOT_NAME + SEP + name, image=image_request.content)
+        except Exception as e:
+            print(f'Tried creating emoji {name}, but failed for unknown reason: {e}')
         
     emoji_cache[name] = temp_emoji
     if verbose: await ctx.send(f'Created emote {temp_emoji}')
