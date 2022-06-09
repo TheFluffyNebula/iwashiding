@@ -122,6 +122,13 @@ async def _replace_with_emotes(message: _discord.Message):
     await hook.delete()
     print('Deleted original message and hook')
     
+@bot.command(aliases=['showall']) 
+async def show(ctx: _commands.Context):
+    """Show all generated emojis."""
+    global emoji_cache, popularity_cache
+    
+    await ctx.send('```\n' + '\n'.join(map(lambda emoji: ':' + emoji + ':', emoji_cache.keys())) + '\n```')
+    
 @bot.command(aliases=['overwrite'])
 async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
     """Add or overwrite existing emote, using a name and url."""
@@ -140,7 +147,7 @@ async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
         if verbose: await ctx.send(f'Deleted existing emoji {name}.')
         print('Deleted existing emoji:', name)
     if image_request.status_code != 200 or not image_request.headers.get('Content-Type', None).startswith('image'):
-        if verbose: await ctx.send('Invalid url:', url)
+        if verbose: await ctx.send(f'Invalid url: {url}')
         print('Bad response:', image_request.status_code, 'from:', url)
         return
     
