@@ -151,6 +151,7 @@ async def add(ctx: _commands.Context, name: str, url: str=None, verbose: bool=Tr
         src = card_body.find('p').find_all('img')[-1]['src']
         url = src.replace('3.0', '1.0') # always use the smallest for safety
         await add(ctx, name, url, verbose)
+        return
     
     guild = ctx.guild
     
