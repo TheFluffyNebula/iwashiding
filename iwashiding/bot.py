@@ -47,9 +47,8 @@ async def on_message(message: _discord.Message):
     if not bot.is_ready():
         print('Bot not ready yet!')
         return
-    
-    author = message.author
-    if not isinstance(author, _discord.member.Member):
+
+    if message.author.bot:
         # ignore messages from bots
         return
 
