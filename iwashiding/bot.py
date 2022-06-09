@@ -5,7 +5,7 @@ import requests as _requests
 from dotenv import load_dotenv as _load_dotenv
 from discord.ext import commands as _commands
 import discord as _discord
-
+from Levenshtein import distance
 from presets import *
 
 emotes.update(_requests.get(TOP_EMOTES_URL).json()['emotes'])
@@ -80,7 +80,16 @@ async def emote(ctx: _commands.Context, emote: str):
         return
     
     await ctx.send(emotes[emote])
+
+@bot.command()
+async def search(ctx: _commands.Context, entry: str):
+    """Shows 5 emotes closest to the entry"""
+    global emoji_cache
     
+    search_results = sorted(emoji_cache ,key=lambda emote: distance(emote.lower(), entry.lower()))[:NUMBER_SEARCH_RESULTS]
+    await ctx.send(' '.join(search_results))
+            
+
 async def _replace_with_emotes(message: _discord.Message):
     global emoji_cache, popularity_cache
 

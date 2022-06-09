@@ -14,3 +14,4 @@ emotes = {"PogChamp": "https://static-cdn.jtvnw.net/emoticons/v2/305954156/stati
 TOP_EMOTES_URL = 'https://raw.githubusercontent.com/nouturnsign/iwashiding/master/top_emotes.json'
 FAILED_TO_RESIZE_ASSET = 50138
 USER_REACTION_TIME_SECONDS = 3.0
+NUMBER_SEARCH_RESULTS = 5
