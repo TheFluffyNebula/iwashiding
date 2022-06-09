@@ -38,7 +38,7 @@ async def on_ready():
     
     emoji_cache = {emoji.name[len(BOT_NAME + SEP):]:emoji for emoji in bot.emojis if emoji.name.startswith(BOT_NAME)}
     popularity_cache = {name:0 for name in emoji_cache}
-    print("Available emojis:", list(emoji_cache.keys()))
+    print("Number of available emojis:", len(emoji_cache.keys()))
     print(BOT_NAME + " ready")
 
 @bot.event
