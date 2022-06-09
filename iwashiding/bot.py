@@ -2,6 +2,7 @@ import os as _os
 import re as _re
 import asyncio as _asyncio
 import requests as _requests
+import bs4 as _bs4
 from dotenv import load_dotenv as _load_dotenv
 from discord.ext import commands as _commands
 import discord as _discord
@@ -86,9 +87,8 @@ async def search(ctx: _commands.Context, entry: str):
     """Shows 5 emotes closest to the entry"""
     global emoji_cache
     
-    search_results = sorted(emoji_cache ,key=lambda emote: distance(emote.lower(), entry.lower()))[:NUMBER_SEARCH_RESULTS]
+    search_results = sorted(emoji_cache, key=lambda emote: distance(emote.lower(), entry.lower()))[:NUMBER_SEARCH_RESULTS]
     await ctx.send(' '.join(search_results))
-            
 
 async def _replace_with_emotes(message: _discord.Message):
     global emoji_cache, popularity_cache
@@ -138,9 +138,19 @@ async def show(ctx: _commands.Context):
     await ctx.send('```\n' + '\n'.join(map(lambda emoji: ':' + emoji + ':', emoji_cache.keys())) + '\n```')
     
 @bot.command(aliases=['overwrite'])
-async def add(ctx: _commands.Context, name: str, url: str, verbose: bool=True):
-    """Add or overwrite existing emote, using a name and url."""
+async def add(ctx: _commands.Context, name: str, url: str=None, verbose: bool=True):
+    """Add or overwrite existing emote, using just a url or a name and url."""
     global emoji_cache, popularity_cache
+    
+    if url is None:
+        # name is actually a twitchemotes.com url to an emote
+        r = _requests.get(name)
+        soup = _bs4.BeautifulSoup(r.content, 'html.parser')
+        name = soup.find('h2').text
+        card_body = soup.find('div', {'class': 'card-body'})
+        src = card_body.find('p').find_all('img')[-1]['src']
+        url = src.replace('3.0', '1.0') # always use the smallest for safety
+        await add(ctx, name, url, verbose)
     
     guild = ctx.guild
     
