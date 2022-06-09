@@ -201,5 +201,34 @@ async def clear(ctx: _commands.Context):
     emoji_cache = {}
     popularity_cache = {}
     await ctx.send(f"Cleared all emotes from {BOT_NAME}.")
+    
+@bot.command()
+async def react(ctx: _commands.Context, emote: str):
+    """Creates a temporary reaction to a message by replying to the message."""
+    global emoji_cache, popularity_cache
+    
+    message = ctx.message
+    reference = message.reference
+    if reference is None:
+        await ctx.send('Cannot react to an unknown message. Reply to the message when reacting.')
+        return
+    
+    try:
+        original_message = await ctx.fetch_message(reference.message_id)
+    except (_discord.NotFound, _discord.HTTPException):
+        await ctx.send('Cannot find original message.')
+        return
+    
+    if emote not in emoji_cache:
+        if emote not in emotes:
+            await ctx.send('Could not find the emote. `add` it first.')
+            return
+        await add(ctx, emote, emotes[emote])
+    
+    emoji = emoji_cache[emote]
+    await original_message.add_reaction(emoji)
+    await _asyncio.sleep(USER_REACTION_TIME_SECONDS)
+    await original_message.remove_reaction(emoji, bot.user)
+    await message.delete()
 
 bot.run(DISCORD_TOKEN)
