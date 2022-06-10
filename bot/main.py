@@ -61,20 +61,20 @@ async def on_message(message: _discord.Message):
 
 @bot.command()
 async def demo(ctx: _commands.Context):
-    """Demo of sending emotes."""
+    """Demo of sending emotes"""
     
     await ctx.send('You should see the PogChamp lizard.')
     await ctx.send(emotes["PogChamp"])
 
 @bot.command()
 async def catjam(ctx: _commands.Context):
-    """Sending catJAM as an embeded gif."""
+    """Sending catJAM as an embed gif"""
     
     await ctx.send(embed = _discord.Embed().set_image(url="https://cdn.betterttv.net/emote/61fe27dd06fd6a9f5be371a2/1x.gif"))    
 
 @bot.command()
 async def emote(ctx: _commands.Context, emote: str):
-    """Have the bot send an existing emote as an image/*."""
+    """Have the bot send an existing emote as an image/*"""
     
     if emote not in emoji_cache:
         await ctx.send('Emote unavailable.')
@@ -84,11 +84,11 @@ async def emote(ctx: _commands.Context, emote: str):
 
 @bot.command()
 async def search(ctx: _commands.Context, entry: str):
-    """Shows 5 emotes closest to the entry"""
+    """Shows 5 emotes closest to the entry""" # edit if NUMBER_SEARCH_RESULTS is changed
     global emoji_cache
     
     search_results = sorted(emoji_cache, key=lambda emote: _distance(emote.lower(), entry.lower()))[:NUMBER_SEARCH_RESULTS]
-    await ctx.send(' '.join(search_results))
+    await ctx.send(f'First {NUMBER_SEARCH_RESULTS} search results: ' + ' '.join(search_results))
 
 async def _replace_with_emotes(message: _discord.Message):
     global emoji_cache, popularity_cache
@@ -132,14 +132,14 @@ async def _replace_with_emotes(message: _discord.Message):
     
 @bot.command(aliases=['showall']) 
 async def show(ctx: _commands.Context):
-    """Show all generated emojis."""
+    """Show all generated emojis"""
     global emoji_cache, popularity_cache
     
     await ctx.send('```\n' + '\n'.join(map(lambda emoji: ':' + emoji + ':', emoji_cache.keys())) + '\n```')
     
 @bot.command(aliases=['overwrite'])
 async def add(ctx: _commands.Context, name: str, url: str=None, verbose: bool=True):
-    """Add or overwrite existing emote, using just a url or a name and url."""
+    """Add or overwrite existing emote, using just a url or a name and url"""
     global emoji_cache, popularity_cache
     
     if url is None:
@@ -199,7 +199,7 @@ async def add(ctx: _commands.Context, name: str, url: str=None, verbose: bool=Tr
 
 @bot.command() 
 async def remove(ctx: _commands.Context, emote: str):
-    """Remove an existing emote, using a name."""
+    """Remove an existing emote, using a name"""
     global emoji_cache, popularity_cache
     
     if emote not in emoji_cache:
@@ -212,7 +212,7 @@ async def remove(ctx: _commands.Context, emote: str):
 
 @bot.command(aliases=['removeall']) 
 async def clear(ctx: _commands.Context):
-    """Remove all generated emojis."""
+    """Remove all generated emojis"""
     global emoji_cache, popularity_cache
     
     for emoji in emoji_cache.values():
@@ -224,7 +224,7 @@ async def clear(ctx: _commands.Context):
     
 @bot.command()
 async def react(ctx: _commands.Context, emote: str):
-    """Creates a temporary reaction to a message by replying to the message."""
+    """Creates a temporary reaction to a message by replying to the message"""
     global emoji_cache, popularity_cache
     
     message = ctx.message
