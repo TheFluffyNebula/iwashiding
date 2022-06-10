@@ -76,11 +76,11 @@ async def catjam(ctx: _commands.Context):
 async def emote(ctx: _commands.Context, emote: str):
     """Have the bot send an existing emote as an image/*."""
     
-    if emote not in emotes:
+    if emote not in emoji_cache:
         await ctx.send('Emote unavailable.')
         return
     
-    await ctx.send(emotes[emote])
+    await ctx.send(emoji_cache[emote])
 
 @bot.command()
 async def search(ctx: _commands.Context, entry: str):
