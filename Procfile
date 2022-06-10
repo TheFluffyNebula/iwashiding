@@ -1,1 +1,1 @@
-worker: python iwashiding/bot.py 
+worker: python bot/main.py 
